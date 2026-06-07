@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quiz Zusatzinfo</title>
+  <meta name="description" content="Öffentliche Quiz-Zusatzinfo-Seite, lädt Fragen aus fragen.json." />
+  <style>
+    :root {
+      --bg: #0f172a;
+      --text: #f8fafc;
+      --muted: #cbd5e1;
+      --accent: #38bdf8;
+      --accent2: #a78bfa;
+      --green: #34d399;
+      --red: #fb7185;
+      --border: rgba(255,255,255,.14);
+      --shadow: 0 24px 80px rgba(0,0,0,.38);
+      --radius: 28px;
+      --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: var(--font);
+      background:
+        radial-gradient(circle at 12% 4%, rgba(56,189,248,.26), transparent 34%),
+        radial-gradient(circle at 86% 2%, rgba(167,139,250,.22), transparent 31%),
+        linear-gradient(180deg, #0f172a 0%, #111827 54%, #020617 100%);
+    }
+
+    main {
+      width: min(840px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: clamp(24px, 6vw, 62px) 0;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.105), rgba(255,255,255,.047));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: clamp(22px, 5vw, 40px);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .eyebrow {
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      font-weight: 850;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0 0 18px;
+      font-size: clamp(32px, 7vw, 58px);
+      letter-spacing: -.055em;
+      line-height: 1.02;
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      letter-spacing: -.035em;
+    }
+
+    p {
+      color: var(--muted);
+      line-height: 1.58;
+      font-size: 17px;
+    }
+
+    .spoiler {
+      cursor: pointer;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: rgba(2,6,23,.48);
+      padding: 16px;
+      margin: 18px 0;
+      user-select: none;
+    }
+
+    .spoiler-content { display: none; margin-top: 13px; }
+    .spoiler.open .spoiler-content { display: block; }
+
+    .answer-box {
+      border: 1px solid rgba(52,211,153,.36);
+      background: rgba(52,211,153,.12);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .answer-box h2 {
+      color: var(--green);
+      margin: 6px 0 0;
+    }
+
+    .section {
+      border-top: 1px solid var(--border);
+      padding-top: 18px;
+      margin-top: 18px;
+    }
+
+    ol {
+      color: var(--muted);
+      line-height: 1.6;
+      padding-left: 20px;
+    }
+
+    a { color: var(--accent); word-break: break-word; }
+
+    .empty { text-align: center; }
+    .empty p { max-width: 620px; margin-left: auto; margin-right: auto; }
+
+    .badge {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 10px;
+      color: var(--muted);
+      background: rgba(255,255,255,.07);
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+
+    .error { color: #fecdd3; }
+
+    .loader {
+      width: 42px;
+      height: 42px;
+      border: 4px solid rgba(255,255,255,.2);
+      border-top-color: var(--accent);
+      border-radius: 999px;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 18px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <main>
+    <div id="app">
+      <article class="card empty">
+        <div class="loader"></div>
+        <div class="eyebrow">Quiz Zusatzinfo</div>
+        <h1>Lade Frage …</h1>
+      </article>
+    </div>
+  </main>
+
+  <script>
+    const app = document.getElementById("app");
+
+    function esc(value = "") {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function getQuestionId() {
+      const params = new URLSearchParams(location.hash.startsWith("#") ? location.hash.slice(1) : "");
+      return params.get("id");
+    }
+
+    async function loadQuestions() {
+      const response = await fetch("./fragen.json?cache=" + Date.now(), { cache: "no-store" });
+      if (!response.ok) throw new Error("fragen.json konnte nicht geladen werden.");
+      const data = await response.json();
+      if (!Array.isArray(data.questions)) throw new Error("fragen.json braucht ein Feld questions.");
+      return data.questions;
+    }
+
+    function renderEmpty() {
+      app.innerHTML = `
+        <article class="card empty">
+          <div class="eyebrow">Quiz Zusatzinfo</div>
+          <h1>Bitte QR-Code scannen.</h1>
+          <p>
+            Diese Seite zeigt nur Zusatzinformationen zu einer einzelnen Quizfrage.
+            Ohne QR-Code wird keine Frage angezeigt.
+          </p>
+        </article>
+      `;
+    }
+
+    function renderNotFound(id) {
+      app.innerHTML = `
+        <article class="card empty">
+          <div class="eyebrow error">Nicht gefunden</div>
+          <h1>Diese Frage wurde nicht gefunden.</h1>
+          <p class="error">
+            Die ID <strong>${esc(id || "-")}</strong> existiert nicht in der aktuellen fragen.json.
+            Vielleicht wurde die Datei noch nicht hochgeladen oder der QR-Code ist veraltet.
+          </p>
+        </article>
+      `;
+    }
+
+    function renderError(message) {
+      app.innerHTML = `
+        <article class="card empty">
+          <div class="eyebrow error">Fehler</div>
+          <h1>Die Fragen konnten nicht geladen werden.</h1>
+          <p class="error">${esc(message)}</p>
+          <p>
+            Prüfe, ob <strong>fragen.json</strong> neben der <strong>index.html</strong> hochgeladen wurde.
+            Lokal per Doppelklick kann das Laden je nach Browser blockiert werden; online funktioniert es.
+          </p>
+        </article>
+      `;
+    }
+
+    function renderQuestion(q) {
+      const meta = [q.round, q.points ? `${q.points} Punkte` : ""].filter(Boolean).join(" · ");
+      const sources = Array.isArray(q.sources) ? q.sources.filter(Boolean) : [];
+
+      app.innerHTML = `
+        <article class="card">
+          ${meta ? `<div class="badge">${esc(meta)}</div>` : ""}
+          <div class="eyebrow">Quizfrage</div>
+          <h1>${esc(q.question || "Quizfrage")}</h1>
+
+          <div class="spoiler" onclick="this.classList.toggle('open')">
+            <strong>Antwort anzeigen</strong>
+            <div class="spoiler-content">
+              <div class="answer-box">
+                <div>Richtige Antwort</div>
+                <h2>${esc(q.answer || "-")}</h2>
+              </div>
+            </div>
+          </div>
+
+          ${q.context ? `
+            <section class="section">
+              <h2>Kontext / Zusatzinfo</h2>
+              <p>${esc(q.context).replaceAll("\\n", "<br>")}</p>
+            </section>
+          ` : ""}
+
+          ${sources.length ? `
+            <section class="section">
+              <h2>Quellen & Links</h2>
+              <ol>
+                ${sources.map(src => `<li><a href="${esc(src)}" target="_blank" rel="noopener noreferrer">${esc(src)}</a></li>`).join("")}
+              </ol>
+            </section>
+          ` : ""}
+        </article>
+      `;
+    }
+
+    async function init() {
+      const id = getQuestionId();
+
+      if (!id) {
+        renderEmpty();
+        return;
+      }
+
+      try {
+        const questions = await loadQuestions();
+        const question = questions.find(q => String(q.id) === String(id));
+        if (!question) {
+          renderNotFound(id);
+          return;
+        }
+        renderQuestion(question);
+      } catch (error) {
+        renderError(error.message || "Unbekannter Fehler.");
+      }
+    }
+
+    window.addEventListener("hashchange", init);
+    init();
+  </script>
+</body>
+</html>
