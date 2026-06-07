@@ -1,15 +1,15 @@
 {
-  "updatedAt": "2026-06-08T00:00:00.000Z",
+  "updatedAt": "2026-06-07T23:28:51.065Z",
   "questions": [
     {
-      "id": "demo-fanta",
-      "round": "Markensucht",
-      "points": "100",
-      "question": "Zu welchem Unternehmen gehört die Marke Fanta?",
-      "answer": "The Coca-Cola Company",
-      "context": "Fanta gehört zur Coca-Cola Company. Spannend: Die Marke entstand ursprünglich im Umfeld deutscher Coca-Cola-Abfüllbetriebe während des Zweiten Weltkriegs.",
+      "id": "e0a15e11",
+      "round": "Bildungslücke",
+      "points": "",
+      "question": "In welchem Land ist die Lebenserwartung am Höchsten?",
+      "answer": "Monaco",
+      "context": "Mit einer Lebenserwartung von rund 87 Jahren hat Monaco die höchste Lebenserwartung der Welt. Gründe sind der hohe Lebensstandard, eine sehr gute Gesundheitsversorgung, geringe Armut und ein insgesamt gesundheitsförderndes Umfeld",
       "sources": [
-        "https://www.coca-colacompany.com/about-us/history"
+        "https://www.visualcapitalist.com/mapped-life-expectancy-by-country-in-2025/?utm_source=chatgpt.com"
       ]
     }
   ]
